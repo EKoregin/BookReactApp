@@ -20,24 +20,24 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
 
-    public Flux<Book> findAll() {
+    public Flux<BookDTO> findAll() {
         return bookRepository.findAll()
-                .doOnNext(book -> {
-                    log.info("Getting book with isbn {}", book.getIsbn());
-                });
+                .map(bookMapper::toBookDTO);
     }
 
-    public Mono<Book> findByIsbn(String isbn) {
-        return bookRepository.findByIsbn(isbn);
-    }
-
-    @Transactional
-    public Mono<Book> create(BookDTO dto) {
-        return bookRepository.save(bookMapper.toBook(dto));
+    public Mono<BookDTO> findByIsbn(String isbn) {
+        return bookRepository.findByIsbn(isbn)
+                .map(bookMapper::toBookDTO);
     }
 
     @Transactional
-    public Mono<Book> update(String isbn, BookDTO dto) {
+    public Mono<BookDTO> create(BookDTO dto) {
+        return bookRepository.save(bookMapper.toBook(dto))
+                .map(bookMapper::toBookDTO);
+    }
+
+    @Transactional
+    public Mono<BookDTO> update(String isbn, BookDTO dto) {
         return bookRepository.findByIsbn(isbn)
                 .switchIfEmpty(Mono.error(new BookNotFoundException("Book not found with isbn " + isbn)))
                 .flatMap(book -> {
@@ -46,6 +46,7 @@ public class BookService {
                     updatedBook.setId(book.getId());
                     return bookRepository.save(updatedBook);
                 })
+                .map(bookMapper::toBookDTO)
                 .onErrorResume(Mono::error);
     }
 

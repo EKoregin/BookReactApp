@@ -10,4 +10,6 @@ public interface BookMapper {
 
     @Mapping(target = "id", ignore = true)
     Book toBook(BookDTO bookDTO);
+
+    BookDTO toBookDTO(Book book);
 }

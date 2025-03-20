@@ -15,5 +15,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/books
     user: b2b
     password: b2b
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  codec:
+    max-in-memory-size: 20MB
 
 

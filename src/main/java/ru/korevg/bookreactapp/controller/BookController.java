@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.korevg.bookreactapp.domain.Book;
 import ru.korevg.bookreactapp.dto.BookDTO;
 import ru.korevg.bookreactapp.service.BookService;
 
@@ -30,12 +29,12 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public Flux<Book> getBooks() {
+    public Flux<BookDTO> getBooks() {
         return bookService.findAll();
     }
 
     @GetMapping("/isbn/{isbn}")
-    public Mono<ResponseEntity<Book>> getBookByIsbn(@PathVariable("isbn") String isbn) {
+    public Mono<ResponseEntity<BookDTO>> getBookByIsbn(@PathVariable("isbn") String isbn) {
         return bookService.findByIsbn(isbn)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.defer(() -> {
@@ -45,7 +44,7 @@ public class BookController {
     }
 
     @PostMapping
-    public Mono<ResponseEntity<Book>> createBook(@RequestBody BookDTO dto) {
+    public Mono<ResponseEntity<BookDTO>> createBook(@RequestBody BookDTO dto) {
         return bookService.create(dto)
                 .map(book -> {
                     log.info("Book added: {}", book);
@@ -71,7 +70,7 @@ public class BookController {
     }
 
     @PutMapping("/isbn/{isbn}")
-    public Mono<ResponseEntity<Book>> updateBook(@PathVariable("isbn") String isbn,
+    public Mono<ResponseEntity<BookDTO>> updateBook(@PathVariable("isbn") String isbn,
                                                  @RequestBody BookDTO dto) {
         return bookService.update(isbn, dto)
                 .map(ResponseEntity::ok)
