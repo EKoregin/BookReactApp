@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # Порт для AMQP
+      - "15672:15672"  # Порт для веб-интерфейса
+    environment:
+      RABBITMQ_DEFAULT_USER: book         # Имя пользователя по умолчанию
+      RABBITMQ_DEFAULT_PASS: password     # Пароль по умолчанию
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq   # Хранение данных RabbitMQ
+
+volumes:
+  rabbitmq_data:

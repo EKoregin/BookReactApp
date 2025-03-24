@@ -21,5 +21,10 @@ spring:
       max-request-size: 20MB
   codec:
     max-in-memory-size: 20MB
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: book
+    password: password
 
 

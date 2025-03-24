@@ -23,17 +23,29 @@ public class BookContentController {
 
     private final BookContentService bookContentService;
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Mono<BookContentDto> uploadBookContent(@RequestPart("content") Flux<DataBuffer> content) {
-        return bookContentService.create(content);
+    @PostMapping(value = "/{isbn}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<BookContentDto> uploadBookContent(
+            @PathVariable String isbn,
+            @RequestPart("content") Flux<DataBuffer> content) {
+        return bookContentService.create(content, isbn);
     }
 
-    @GetMapping("/download/{id}")
-    public Mono<ResponseEntity<byte[]>> downloadBookContent(@PathVariable("id") Long id) {
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<byte[]>> downloadBookContentById(@PathVariable("id") Long id) {
         return bookContentService.findById(id)
                 .map(bk -> ResponseEntity
                         .status(HttpStatus.OK)
                         .contentType(MediaType.parseMediaType(bk.getMediaType()))
                         .body(bk.getContent()));
     }
+
+    @GetMapping("/isbn/{isbn}")
+    public Mono<ResponseEntity<byte[]>> downloadBookContentByIsbn(@PathVariable("isbn") String isbn) {
+        return bookContentService.findByIsbn(isbn)
+                .map(bk -> ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.parseMediaType(bk.getMediaType()))
+                        .body(bk.getContent()));
+    }
+
 }
