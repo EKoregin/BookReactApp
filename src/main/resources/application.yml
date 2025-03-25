@@ -26,5 +26,11 @@ spring:
     port: 5672
     username: book
     password: password
+  topic-exchange:
+    name: producer
+  books:
+    queue:
+      name: books
+      routing-key: books
 
 

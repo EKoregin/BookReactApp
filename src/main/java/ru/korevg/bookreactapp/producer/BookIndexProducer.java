@@ -1,20 +1,26 @@
 package ru.korevg.bookreactapp.producer;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.korevg.bookreactapp.config.RabbitMQConfig;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class BookIndexProducer {
 
-    @Autowired
-    private AmqpTemplate amqpTemplate;
+    private final AmqpTemplate amqpTemplate;
+
+    @Value("${spring.topic-exchange.name}")
+    private String exchange;
+
+    @Value("${spring.books.queue.routing-key}")
+    private String booksQueueRoutingKey;
 
     public void sendMessage(String message) {
-        amqpTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, message);
-        log.info("Message: {} sent", message);
+        amqpTemplate.convertAndSend(exchange, booksQueueRoutingKey, message);
+        log.info("Message: {} sent successfully", message);
     }
 }
