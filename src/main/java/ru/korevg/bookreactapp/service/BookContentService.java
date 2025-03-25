@@ -72,7 +72,7 @@ public class BookContentService {
                                         bookRepository.save(book).subscribe();
                                         //Отправка сообщения на индексацию книги
                                         try {
-                                            String msg = String.format("Book with isbn: %s need reindex in ElasticSearch", isbn);
+                                            String msg = String.format("Book with isbn: {%s} need reindex in ElasticSearch", isbn);
                                             log.info(msg);
                                             bookIndexProducer.sendMessage(msg);
                                         } catch (AmqpConnectException e) {
@@ -108,12 +108,17 @@ public class BookContentService {
                         log.info(errMsg);
                         return Mono.error(new ContentNotFoundException(errMsg));
                     }
-                    return bookContentRepository.findById(book.getContent())
+                    return bookContentRepository.findById(contentId)
                             .switchIfEmpty(Mono.defer(() -> {
                                 String errMsg = String.format("Content ID: %s for book with isbn %s is null", contentId, isbn);
                                 log.info(errMsg);
                                 return Mono.error(new ContentNotFoundException(errMsg));
                             }));
                 });
+    }
+
+    @Transactional
+    public Mono<Void> deleteById(Long id) {
+        return bookContentRepository.deleteById(id);
     }
 }

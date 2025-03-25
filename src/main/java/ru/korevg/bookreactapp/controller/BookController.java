@@ -2,6 +2,7 @@ package ru.korevg.bookreactapp.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.korevg.bookreactapp.dto.BookDTO;
+import ru.korevg.bookreactapp.dto.BookSearchDto;
 import ru.korevg.bookreactapp.service.BookService;
+import ru.korevg.bookreactapp.service.ElasticSearchService;
 
 import java.net.URI;
 
@@ -27,6 +30,13 @@ import java.net.URI;
 public class BookController {
 
     private final BookService bookService;
+    private final ElasticSearchService elasticSearchService;
+
+
+    @GetMapping("/search/{search}")
+    public Flux<SearchHit<BookSearchDto>> findBySearchString(@PathVariable("search") String search) {
+        return elasticSearchService.searchBooks(search);
+    }
 
     @GetMapping
     public Flux<BookDTO> getBooks() {

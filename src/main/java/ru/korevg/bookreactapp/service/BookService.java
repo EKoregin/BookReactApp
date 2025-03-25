@@ -10,6 +10,7 @@ import ru.korevg.bookreactapp.domain.Book;
 import ru.korevg.bookreactapp.dto.BookDTO;
 import ru.korevg.bookreactapp.exceptions.BookNotFoundException;
 import ru.korevg.bookreactapp.mapper.BookMapper;
+import ru.korevg.bookreactapp.repository.BookContentRepository;
 import ru.korevg.bookreactapp.repository.BookRepository;
 
 @Slf4j
@@ -18,6 +19,7 @@ import ru.korevg.bookreactapp.repository.BookRepository;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final BookContentRepository bookContentRepository;
     private final BookMapper bookMapper;
 
     public Flux<BookDTO> findAll() {
@@ -50,12 +52,17 @@ public class BookService {
                 .onErrorResume(Mono::error);
     }
 
+    @Transactional
     public Mono<Void> delete(String isbn) {
         return bookRepository.findByIsbn(isbn)
                 .switchIfEmpty(Mono.error(new BookNotFoundException("Book not found with isbn " + isbn)))
                 .flatMap(book -> {
                     log.info("Deleting book with isbn {}", book.getIsbn());
-                    return bookRepository.delete(book);
+                    return book.getContent() != null
+                            ? bookContentRepository.deleteById(book.getContent())
+                            .then(bookRepository.delete(book))
+                            : bookRepository.delete(book);
+
                 })
                 .then();
     }
