@@ -2,6 +2,7 @@ package ru.korevg.bookreactapp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpConnectException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -10,6 +11,7 @@ import ru.korevg.bookreactapp.domain.Book;
 import ru.korevg.bookreactapp.dto.BookDTO;
 import ru.korevg.bookreactapp.exceptions.BookNotFoundException;
 import ru.korevg.bookreactapp.mapper.BookMapper;
+import ru.korevg.bookreactapp.producer.BookIndexProducer;
 import ru.korevg.bookreactapp.repository.BookContentRepository;
 import ru.korevg.bookreactapp.repository.BookRepository;
 
@@ -21,6 +23,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BookContentRepository bookContentRepository;
     private final BookMapper bookMapper;
+    private final BookIndexProducer bookIndexProducer;
 
     public Flux<BookDTO> findAll() {
         return bookRepository.findAll()
@@ -35,6 +38,17 @@ public class BookService {
     @Transactional
     public Mono<BookDTO> create(BookDTO dto) {
         return bookRepository.save(bookMapper.toBook(dto))
+                .doOnNext(savedBook -> {
+                    //Отправка сообщения на индексацию книги
+                    try {
+                        String msg = String.format("Book with isbn: {%s} need reindex in ElasticSearch", savedBook.getIsbn());
+                        log.info(msg);
+                        bookIndexProducer.sendMessage(msg);
+                    } catch (AmqpConnectException e) {
+                        log.error("Ошибка подключения к RabbitMQ: {}", e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                })
                 .map(bookMapper::toBookDTO);
     }
 

@@ -4,6 +4,8 @@ import lombok.Data;
 import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Document(indexName = "booksearchdto")
@@ -14,4 +16,6 @@ public class BookSearchDto {
     private String author;
     private String isbn;
     private BigDecimal price;
+    private Set<String> tokens = new HashSet<>();
+    private String content;
 }

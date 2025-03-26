@@ -2,7 +2,6 @@ package ru.korevg.bookreactapp.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +32,13 @@ public class BookController {
     private final ElasticSearchService elasticSearchService;
 
 
+    @GetMapping("/fulltextsearch/{search}")
+    public Flux<BookSearchDto> findByFullTextSearch(@PathVariable("search") String search) {
+        return elasticSearchService.fullTextSearchForBookISBN(search);
+    }
+
     @GetMapping("/search/{search}")
-    public Flux<SearchHit<BookSearchDto>> findBySearchString(@PathVariable("search") String search) {
+    public Flux<BookSearchDto> findBySearchString(@PathVariable("search") String search) {
         return elasticSearchService.searchBooks(search);
     }
 
@@ -81,7 +85,7 @@ public class BookController {
 
     @PutMapping("/isbn/{isbn}")
     public Mono<ResponseEntity<BookDTO>> updateBook(@PathVariable("isbn") String isbn,
-                                                 @RequestBody BookDTO dto) {
+                                                    @RequestBody BookDTO dto) {
         return bookService.update(isbn, dto)
                 .map(ResponseEntity::ok)
                 .onErrorResume(errors -> {

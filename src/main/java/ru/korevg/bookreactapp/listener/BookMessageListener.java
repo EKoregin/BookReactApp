@@ -16,9 +16,14 @@ public class BookMessageListener {
 
     @RabbitListener(queues = "${spring.books.queue.name}")
     public void receiveIndexMessage(String message) {
-
+        log.info("Received index message: {}", message);
         String isbn = StringUtils.extractISBN(message);
         if (isbn != null) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             bookIndexService.indexBookInElasticSearch(isbn);
         } else {
             log.error("Index book in ElasticSearch with isbn is null. Message: {}", message);
