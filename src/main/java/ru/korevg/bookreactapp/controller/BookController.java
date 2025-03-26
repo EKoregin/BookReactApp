@@ -1,5 +1,7 @@
 package ru.korevg.bookreactapp.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,9 +34,12 @@ public class BookController {
     private final ElasticSearchService elasticSearchService;
 
 
+    @Operation(summary = "Полнотекстовый поиск фразами")
     @GetMapping("/fulltextsearch/{search}")
-    public Flux<BookSearchDto> findByFullTextSearch(@PathVariable("search") String search) {
-        return elasticSearchService.fullTextSearchForBookISBN(search);
+    public Flux<BookSearchDto> findByFullTextSearch(
+            @Parameter(description = "Строка поиска")
+            @PathVariable("search") String search) {
+        return elasticSearchService.fullTextSearch(search);
     }
 
     @GetMapping("/search/{search}")

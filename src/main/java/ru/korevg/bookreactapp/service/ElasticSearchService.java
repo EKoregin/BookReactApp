@@ -25,7 +25,7 @@ public class ElasticSearchService {
     private final ReactiveElasticsearchTemplate elasticsearchTemplate;
 
     /**
-     * Ищет совпадение по полям.
+     * Ищет совпадение или вхождение по полям.
      * Если указать несколько слов, то ищет их наличие в tokens
      */
     public Flux<BookSearchDto> searchBooks(String search) {
@@ -44,7 +44,7 @@ public class ElasticSearchService {
      * Возвращает описания книги из ElasticSearch.
      * Часть полей может не выводится. Например можно отфильтровать content и tokens
      */
-    public Flux<BookSearchDto> fullTextSearchForBookISBN(String searchPhrase) {
+    public Flux<BookSearchDto> fullTextSearch(String searchPhrase) {
         log.info("Full text searching for phrase: \"{}\"", searchPhrase);
 
         MatchPhraseQuery matchPhraseQuery = QueryBuilders.matchPhrase()
