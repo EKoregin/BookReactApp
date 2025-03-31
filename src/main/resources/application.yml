@@ -1,11 +1,10 @@
 spring:
-  data:
-    elasticsearch:
-      uris: http://localhost:9200
-      username: elastic
-      password: password
-      repositories:
-        enabled: false
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: password
+    repositories:
+      enabled: false
 
   application:
     name: BookReactApp
