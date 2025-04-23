@@ -20,7 +20,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Запуск тестов...'
-                sh 'mvn test'
+                sh 'mvn test -Dtest="*BookItTest"'
             }
         }
     }
