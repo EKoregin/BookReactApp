@@ -14,7 +14,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Сборка проекта...'
-                sh 'mvn clean install'
+                sh 'mvn clean compile'
             }
         }
         stage('Test') {
