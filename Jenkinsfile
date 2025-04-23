@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/EKoregin/BookReactApp.git'
+                git credentialsId: 'EKoregin', url: 'https://github.com/EKoregin/BookReactApp.git'
             }
         }
         stage('Build') {
