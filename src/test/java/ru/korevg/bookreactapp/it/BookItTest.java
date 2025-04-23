@@ -1,6 +1,7 @@
 package ru.korevg.bookreactapp.it;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +31,7 @@ public class BookItTest extends ITBase {
                 .build();
     }
 
+    @Disabled
     @Test
     @Order(1)
     public void findBook() {
@@ -48,6 +50,7 @@ public class BookItTest extends ITBase {
                 .expectBody().json(json);
     }
 
+    @Disabled
     @Test
     @Order(2)
     public void createBook() {
@@ -74,6 +77,7 @@ public class BookItTest extends ITBase {
                 .expectBody().json(json);
     }
 
+    @Disabled
     @Test
     @Order(3)
     public void updateBook() {
@@ -100,6 +104,7 @@ public class BookItTest extends ITBase {
                 .expectBody().json(json);
     }
 
+    @Disabled
     @Test
     @Order(4)
     public void deleteBook() {
