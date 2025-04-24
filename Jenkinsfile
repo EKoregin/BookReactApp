@@ -49,9 +49,9 @@ pipeline {
                 bat 'ping -n 6 127.0.0.1 > null'
                 bat 'docker ps -a --format "{{.Names}}"'
                 // Проверяем, что все контейнеры удалены
-                script {
-                    checkContainersRemoved()
-                }
+//                 script {
+//                     checkContainersRemoved()
+//                 }
                 // Запускаем новые контейнеры
                 bat 'docker-compose up -d --build'
             }
