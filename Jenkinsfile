@@ -45,7 +45,7 @@ pipeline {
         stage('Build Docker Image...') {
              agent { label 'windows-agent' }
              steps {
-                 dir('c:\projects\study_projects\reactive\BookReactApp\') {
+                 dir('c:/projects/study_projects/reactive/BookReactApp') {
                      bat 'docker build -t bookreactapp:latest .'
                  }
              }
@@ -54,7 +54,7 @@ pipeline {
         stage('Deploy BookReactApp...') {
              agent { label 'windows-agent' }
              steps {
-                 dir('c:\projects\study_projects\reactive\BookReactApp\') {
+                 dir('c:/projects/study_projects/reactive/BookReactApp') {
                       bat 'docker-compose down || exit 0'
                       bat 'docker-compose up -d --build'
                  }
