@@ -47,6 +47,7 @@ pipeline {
             steps {
                 bat 'docker-compose down || exit 0'
                 bat 'ping -n 6 127.0.0.1 > null'
+                bat 'docker ps -a --format "{{.Names}}"'
                 // Проверяем, что все контейнеры удалены
                 script {
                     def maxAttempts = 10
@@ -55,10 +56,12 @@ pipeline {
                     while (containersExist && attempt < maxAttempts) {
                         containersExist = false
                         for (service in env.COMPOSE_SERVICES.split()) {
-                            def result = bat(script: "docker ps -a -q --filter \"name=${service}\"", returnStatus: true)
-                            if (result == 0) {
+                            def output = bat(script: "docker ps -a -q --filter \"name=^/${service}$\"", returnStdout: true).trim()
+                            if (output) {
                                 containersExist = true
                                 echo "Container ${service} still exists, waiting..."
+                            } else {
+                                echo "Container ${service} not found."
                             }
                         }
                         if (containersExist) {
