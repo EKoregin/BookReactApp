@@ -46,6 +46,7 @@ pipeline {
         stage('Deploy BookReactApp...') {
             steps {
                 bat 'docker-compose down || exit 0'
+                bat 'timeout /t 5'
                 // Проверяем, что все контейнеры удалены
                 script {
                     def maxAttempts = 10
