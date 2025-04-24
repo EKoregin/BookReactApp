@@ -16,17 +16,17 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-              steps {
-                  withSonarQubeEnv('SonarQube') {
-                      bat 'mvn sonar:sonar -Dsonar.token=$SONAR_TOKEN'
-                  }
-              }
-        }
-
         stage('Build') {
             steps {
                 bat 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    bat 'mvn sonar:sonar -Dsonar.token=$SONAR_TOKEN'
+                }
             }
         }
 
