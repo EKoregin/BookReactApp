@@ -46,7 +46,7 @@ pipeline {
         stage('Deploy BookReactApp...') {
             steps {
                 bat 'docker-compose down || exit 0'
-                bat 'timeout /t 5'
+                bat 'ping -n 6 127.0.0.1 > null'
                 // Проверяем, что все контейнеры удалены
                 script {
                     def maxAttempts = 10
@@ -62,7 +62,7 @@ pipeline {
                             }
                         }
                         if (containersExist) {
-                            bat 'timeout /t 2 /nobreak'
+                            bat 'ping -n 3 127.0.0.1 > null'
                             attempt++
                         }
                     }
