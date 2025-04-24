@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     image: bookreactapp:latest
@@ -55,7 +53,7 @@ services:
       - app-network
 
   elasticsearch:
-    image: elasticsearch:7.17.0
+    image: elasticsearch:7.17.28
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
