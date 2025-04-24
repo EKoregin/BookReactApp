@@ -49,6 +49,7 @@ public class BookController {
 
     @GetMapping
     public Flux<BookDTO> getBooks() {
+        log.info("Get all books");
         return bookService.findAll();
     }
 
