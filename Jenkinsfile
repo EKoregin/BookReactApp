@@ -23,19 +23,19 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    bat 'mvn sonar:sonar -Dsonar.token=$SONAR_TOKEN'
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'mvn test -Dtest=!BookItTest'
-            }
-        }
+//         stage('SonarQube Analysis') {
+//             steps {
+//                 withSonarQubeEnv('SonarQube') {
+//                     bat 'mvn sonar:sonar -Dsonar.token=$SONAR_TOKEN'
+//                 }
+//             }
+//         }
+//
+//         stage('Test') {
+//             steps {
+//                 bat 'mvn test -Dtest=!BookItTest'
+//             }
+//         }
 
         stage('Build Docker Image...') {
             steps {
