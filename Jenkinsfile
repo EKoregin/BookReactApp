@@ -30,9 +30,10 @@ pipeline {
             agent any
             steps {
                 echo 'Сборка проекта...'
-                sh 'mvn clean compile'
+                sh 'mvn clean package -DskipTests'
             }
         }
+
         stage('Test') {
             agent any
             steps {
@@ -40,6 +41,7 @@ pipeline {
                 sh 'mvn test -Dtest=!BookItTest'
             }
         }
+
         stage('Build Docker Image...') {
              agent { label 'windows-agent' }
              steps {
@@ -48,6 +50,7 @@ pipeline {
                  }
              }
         }
+
         stage('Deploy BookReactApp...') {
              agent { label 'windows-agent' }
              steps {
