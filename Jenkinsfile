@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
                 SONAR_TOKEN = credentials('sonarqube-token')
     }
@@ -15,11 +15,11 @@ pipeline {
                 git branch: 'main', credentialsId: '64e03b24-12a9-4dd8-941f-12bdcf239f3b', url: 'https://github.com/EKoregin/BookReactApp.git'
             }
         }
-        
+
         stage('SonarQube Analysis') {
               steps {
                   withSonarQubeEnv('SonarQube') {
-                      bat 'mvn sonar:sonar -Dsonar.login=$SONAR_TOKEN'
+                      bat 'mvn sonar:sonar -Dsonar.token=$SONAR_TOKEN'
                   }
               }
         }
