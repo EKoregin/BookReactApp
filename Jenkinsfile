@@ -50,29 +50,7 @@ pipeline {
                 bat 'docker ps -a --format "{{.Names}}"'
                 // Проверяем, что все контейнеры удалены
                 script {
-                    def maxAttempts = 10
-                    def attempt = 0
-                    def containersExist = true
-                    while (containersExist && attempt < maxAttempts) {
-                        containersExist = false
-                        for (service in env.COMPOSE_SERVICES.split()) {
-                            def output = bat(script: "docker ps -a -q --filter \"name=${service}\"", returnStdout: true).trim()
-                            if (output) {
-                                containersExist = true
-                                echo "Container ${service} still exists (ID: ${output}), waiting..."
-                            } else {
-                                echo "Container ${service} not found."
-                            }
-                        }
-                        if (containersExist) {
-                            bat 'ping -n 3 127.0.0.1 > null'
-                            attempt++
-                        }
-                    }
-                    if (containersExist) {
-                        error "Failed to remove containers after ${maxAttempts} attempts"
-                    }
-                    echo 'All containers removed, proceeding with deployment...'
+                    checkContainersRemoved()
                 }
                 // Запускаем новые контейнеры
                 bat 'docker-compose up -d --build'
@@ -88,4 +66,40 @@ pipeline {
             echo 'Pipeline failed!'
         }
     }
+}
+
+// Функция для проверки удаления контейнеров
+def checkContainersRemoved() {
+    def services = env.COMPOSE_SERVICES.split()
+    def maxAttempts = 10
+    def attempt = 0
+    def containersExist = true
+
+    echo "Checking removal of containers: ${services.join(', ')}"
+    while (containersExist && attempt < maxAttempts) {
+        containersExist = false
+        for (service in services) {
+            try {
+                def output = bat(script: "docker ps -a -q --filter \"name=^/${service}\$\"", returnStdout: true).trim()
+                if (output) {
+                    containersExist = true
+                    echo "Attempt ${attempt + 1}/${maxAttempts}: Container ${service} still exists (ID: ${output})"
+                } else {
+                    echo "Attempt ${attempt + 1}/${maxAttempts}: Container ${service} not found"
+                }
+            } catch (Exception e) {
+                echo "Error checking container ${service}: ${e.message}"
+                containersExist = true
+            }
+        }
+        if (containersExist) {
+            echo "Waiting for containers to be removed..."
+            bat 'powershell -Command "Start-Sleep -Seconds 2"'
+            attempt++
+        }
+    }
+    if (containersExist) {
+        error "Failed to remove containers after ${maxAttempts} attempts"
+    }
+    echo "All containers removed, proceeding with deployment..."
 }
