@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  app:
+    image: bookreactapp:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: cloud
+      DB_HOST: books_db
+      RABBITMQ_HOST: rabbitmq
+      ELASTIC_HOST: elasticsearch
+    ports:
+      - "8080:8080"
+    depends_on:
+      books_db:
+        condition: service_healthy
+    networks:
+      - app-network
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -12,6 +30,8 @@ services:
       RABBITMQ_DEFAULT_PASS: password     # Пароль по умолчанию
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq   # Хранение данных RabbitMQ
+    networks:
+      - app-network
 
   books_db:
     image: postgres
@@ -23,9 +43,16 @@ services:
       PGDATA: /var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U b2b -d books" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
+    networks:
+      - app-network
 
   elasticsearch:
     image: elasticsearch:7.17.0
@@ -38,7 +65,7 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     networks:
-      - elastic
+      - app-network
 
   kibana:
     image: kibana:7.17.28
@@ -48,10 +75,11 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     networks:
-      - elastic
+      - app-network
 
 networks:
-  elastic:
+  app-network:
+    driver: bridge
 
 volumes:
   pg_data:
