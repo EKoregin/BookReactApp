@@ -56,10 +56,10 @@ pipeline {
                     while (containersExist && attempt < maxAttempts) {
                         containersExist = false
                         for (service in env.COMPOSE_SERVICES.split()) {
-                            def output = bat(script: "docker ps -a -q --filter \"name=^/${service}$\"", returnStdout: true).trim()
+                            def output = bat(script: "docker ps -a -q --filter \"name=${service}\"", returnStdout: true).trim()
                             if (output) {
                                 containersExist = true
-                                echo "Container ${service} still exists, waiting..."
+                                echo "Container ${service} still exists (ID: ${output}), waiting..."
                             } else {
                                 echo "Container ${service} not found."
                             }
