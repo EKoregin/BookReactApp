@@ -3,6 +3,7 @@ pipeline {
 
     environment {
                 SONAR_TOKEN = credentials('sonarqube-token')
+                COMPOSE_SERVICES = 'app rabbitmq books_db elasticsearch kibana'
     }
 
     tools {
