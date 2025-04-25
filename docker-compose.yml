@@ -1,4 +1,24 @@
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://books_db:5432/keycloak
+      - KC_DB_USERNAME=b2b
+      - KC_DB_PASSWORD=b2b
+      - KC_HOSTNAME=localhost
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT=false
+    ports:
+      - "8081:8080"
+    depends_on:
+      - books_db
+    command: start-dev
+    networks:
+      - app-network
   app:
     image: bookreactapp:latest
     build:

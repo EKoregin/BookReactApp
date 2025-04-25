@@ -2,8 +2,29 @@ cloud:
   dbase-host: localhost:5432
   rabbitmq-host: localhost
   elastic-host: localhost
+  keycloak-host: localhost
 
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${cloud.keycloak-host}:8081/realms/myrealm
+      client:
+        registration:
+          keycloak:
+            client-id: react-app-client
+            client-secret: BBSRN6pWa1KLP6J9Y3gxRaZZ3bDuHVii
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:3000/callback
+            scope: openid,profile,email
+        provider:
+          keycloak:
+            authorization-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/auth
+            token-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/token
+            user-info-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/userinfo
+            jwk-set-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/certs
+            user-name-attribute: preferred_username
   elasticsearch:
     uris: http://${cloud.elastic-host}:9200
     username: elastic
