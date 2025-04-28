@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,6 +48,7 @@ public class BookController {
         return elasticSearchService.searchBooks(search);
     }
 
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping
     public Flux<BookDTO> getBooks() {
         log.info("Get all books");
@@ -63,6 +65,7 @@ public class BookController {
                 }));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Mono<ResponseEntity<BookDTO>> createBook(@RequestBody BookDTO dto) {
         return bookService.create(dto)
@@ -79,6 +82,7 @@ public class BookController {
                 });
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/isbn/{isbn}")
     public Mono<ResponseEntity<Void>> deleteBook(@PathVariable("isbn") String isbn) {
         return bookService.delete(isbn)
@@ -89,6 +93,7 @@ public class BookController {
                 });
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/isbn/{isbn}")
     public Mono<ResponseEntity<BookDTO>> updateBook(@PathVariable("isbn") String isbn,
                                                     @RequestBody BookDTO dto) {

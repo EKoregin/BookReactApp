@@ -8,6 +8,7 @@ import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.korevg.bookreactapp.dto.BookContentDto;
 import ru.korevg.bookreactapp.service.BookContentService;
+import ru.korevg.bookreactapp.service.S3Service;
 
 @Slf4j
 @RestController
@@ -28,7 +30,9 @@ public class BookContentController {
 
     private final BookContentService bookContentService;
     private final DataBufferFactory bufferFactory = new DefaultDataBufferFactory();
+    private final S3Service s3Service;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/{isbn}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<BookContentDto> uploadBookContent(
             @PathVariable String isbn,
@@ -50,7 +54,7 @@ public class BookContentController {
                 .map(bk -> ResponseEntity
                         .status(HttpStatus.OK)
                         .contentType(MediaType.parseMediaType(bk.getMediaType()))
-                        .body(bk.getContent()));
+                        .body(s3Service.downloadFile(bk.getContent())));
     }
 
     @GetMapping("/isbn/{isbn}")
@@ -59,7 +63,7 @@ public class BookContentController {
                 .map(bk -> ResponseEntity
                         .status(HttpStatus.OK)
                         .contentType(MediaType.parseMediaType(bk.getMediaType()))
-                        .body(bk.getContent()));
+                        .body(s3Service.downloadFile(bk.getContent())));
     }
 
 }

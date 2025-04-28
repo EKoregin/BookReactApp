@@ -33,6 +33,7 @@ public class BookContentService {
     private final BookContentMapper bookContentMapper;
     private final BookIndexProducer bookIndexProducer;
     private final BookRepository bookRepository;
+    private final S3Service s3Service;
 
     /**
      * Метод принимает DataBuffer преобразовывает в массив byte[].
@@ -51,21 +52,16 @@ public class BookContentService {
                 }))
                 .flatMap(book -> {
                     int size = (int) content.getSize();
-                    byte[] byteContent;
-                    try {
-                        byteContent = content.getBytes();
-                    } catch (IOException e) {
-                        return Mono.error(new RuntimeException(e));
-                    }
 
                     BookContent bookContent = new BookContent();
                     if (book.getContent() != null) {
                         log.info("Update BookContent with id {}", book.getContent());
                         bookContent.setId(book.getContent());
                     }
-                    bookContent.setContent(byteContent);
+                    bookContent.setContent(s3Service.uploadFile(content.getOriginalFilename(), content));
                     bookContent.setSize(size);
-                    bookContent.setMediaType(getMediaTypeFromByteArray(byteContent));
+                    bookContent.setMediaType(content.getContentType());
+
                     log.info("BookContent was uploaded with size: {} and media type: {}", size, bookContent.getMediaType());
 
                     return bookContentRepository.save(bookContent)

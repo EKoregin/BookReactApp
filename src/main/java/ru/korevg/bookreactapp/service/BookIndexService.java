@@ -28,6 +28,7 @@ public class BookIndexService {
     private final BookService bookService;
     private final ElasticsearchTemplate elasticsearchTemplate;
     private final BookContentService bookContentService;
+    private final S3Service s3Service;
 
     public void indexBookInElasticSearch(String isbn) {
         log.info("Index book in ElasticSearch with isbn: {}", isbn);
@@ -62,7 +63,8 @@ public class BookIndexService {
                             .flatMap(bookContent -> {
                                 try {
                                     log.info("Tokenize book content");
-                                    var rawString = extractText(bookContent.getContent());
+                                    String minioFileKey = bookContent.getContent();
+                                    var rawString = extractText(s3Service.downloadFile(minioFileKey));
                                     var tokens = tokenizeText(rawString);
                                     log.info("Size of book content's tokens: {}", tokens.size());
                                     dto.setTokens(tokens);

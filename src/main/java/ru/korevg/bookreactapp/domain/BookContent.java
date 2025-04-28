@@ -13,7 +13,7 @@ public class BookContent {
 
     @Id
     public Long id;
-    public @NonNull String mediaType;
-    public @NonNull Integer size;
-    public byte[] content;
+    public String mediaType;
+    public Integer size;
+    public String content;
 }

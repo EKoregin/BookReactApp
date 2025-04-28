@@ -5,6 +5,14 @@ cloud:
   keycloak-host: localhost
 
 spring:
+  cloud:
+    aws:
+      credentials:
+        access-key: admin
+        secret-key: password
+      s3:
+        endpoint: http://localhost:9000
+        bucket: bookreactapp
   security:
     oauth2:
       resourceserver:
@@ -73,3 +81,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+aws:
+  java:
+    v1:
+      disableDeprecationAnnouncement: true
