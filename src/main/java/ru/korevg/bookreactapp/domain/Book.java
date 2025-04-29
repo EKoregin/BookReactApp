@@ -27,5 +27,5 @@ public class Book {
     private @NonNull String author;
     private @NonNull String isbn;
     private @NonNull BigDecimal price;
-    private Long content;
+    private String content;
 }

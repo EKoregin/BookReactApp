@@ -27,7 +27,7 @@ public class S3Service {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());
         objectMetadata.setContentLength(file.getSize());
-        String key = bucketName + "/" + fileName;
+        String key = String.format("%d-%s", System.currentTimeMillis(), fileName);
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, new ByteArrayInputStream(file.getBytes()), objectMetadata);
             s3Client.putObject(putObjectRequest);
@@ -46,5 +46,9 @@ public class S3Service {
             throw new RuntimeException("File not found in MinIO: " + key, e);
         }
 
+    }
+
+    public void deleteFile(String key) {
+        s3Client.deleteObject(bucketName, key);
     }
 }

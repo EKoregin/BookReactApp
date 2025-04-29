@@ -107,7 +107,6 @@ services:
     environment:
       - MINIO_ROOT_USER=admin # Установите свой доступ
       - MINIO_ROOT_PASSWORD=password # Установите свой пароль
-      - MINIO_DEFAULT_BUCKETS=bookreactapp # Создаст бакет при старте
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"

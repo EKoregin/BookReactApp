@@ -3,6 +3,7 @@ package ru.korevg.bookreactapp.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpConnectException;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -21,9 +22,9 @@ import ru.korevg.bookreactapp.repository.BookRepository;
 public class BookService {
 
     private final BookRepository bookRepository;
-    private final BookContentRepository bookContentRepository;
     private final BookMapper bookMapper;
     private final BookIndexProducer bookIndexProducer;
+    private final S3Service s3Service;
 
     public Flux<BookDTO> findAll() {
         return bookRepository.findAll()
@@ -72,10 +73,12 @@ public class BookService {
                 .switchIfEmpty(Mono.error(new BookNotFoundException("Book not found with isbn " + isbn)))
                 .flatMap(book -> {
                     log.info("Deleting book with isbn {}", book.getIsbn());
-                    return book.getContent() != null
-                            ? bookContentRepository.deleteById(book.getContent())
-                            .then(bookRepository.delete(book))
-                            : bookRepository.delete(book);
+                    String fileKey = book.getContent();
+                    if (fileKey != null) {
+                        log.info("Deleting book content with key: {}", fileKey);
+                        s3Service.deleteFile(fileKey);
+                    }
+                    return bookRepository.delete(book);
 
                 })
                 .then();

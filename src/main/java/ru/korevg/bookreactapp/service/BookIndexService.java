@@ -27,7 +27,6 @@ public class BookIndexService {
 
     private final BookService bookService;
     private final ElasticsearchTemplate elasticsearchTemplate;
-    private final BookContentService bookContentService;
     private final S3Service s3Service;
 
     public void indexBookInElasticSearch(String isbn) {
@@ -53,7 +52,7 @@ public class BookIndexService {
                         return Mono.just(dto);
                     }
 
-                    return bookContentService.findById(contentId)
+                    return Mono.just(s3Service.downloadFile(bookDto.getContent()))
                             .switchIfEmpty(Mono.defer(() -> {
                                 String errMsg = String.format("Content ID: %s for book with isbn %s not found. Index without content", contentId, isbn);
                                 log.info(errMsg);
@@ -63,8 +62,7 @@ public class BookIndexService {
                             .flatMap(bookContent -> {
                                 try {
                                     log.info("Tokenize book content");
-                                    String minioFileKey = bookContent.getContent();
-                                    var rawString = extractText(s3Service.downloadFile(minioFileKey));
+                                    var rawString = extractText(bookContent);
                                     var tokens = tokenizeText(rawString);
                                     log.info("Size of book content's tokens: {}", tokens.size());
                                     dto.setTokens(tokens);

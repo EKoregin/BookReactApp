@@ -12,5 +12,5 @@ public class BookDTO {
     private String author;
     private String isbn;
     private BigDecimal price;
-    private Long content;
+    private String content;
 }
