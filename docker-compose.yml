@@ -9,7 +9,8 @@ services:
       - KC_DB_URL=jdbc:postgresql://books_db:5432/keycloak
       - KC_DB_USERNAME=b2b
       - KC_DB_PASSWORD=b2b
-      - KC_HOSTNAME=localhost
+      - KC_HOSTNAME=host.docker.internal
+      - KC_HOSTNAME_PORT=8081
       - KC_HTTP_ENABLED=true
       - KC_HOSTNAME_STRICT=false
     ports:
@@ -23,20 +24,26 @@ services:
     image: bookreactapp:latest
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: backend/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: cloud
       DB_HOST: books_db
       RABBITMQ_HOST: rabbitmq
       ELASTIC_HOST: elasticsearch
       SPRING_CLOUD_AWS_S3_ENDPOINT: http://minio:9000
+      LOGSTASH_HOST: logstash
+      MINIO_HOST: minio
+      USER_HOST: 192.168.65.254
+      KEYCLOAK_URL: http://host.docker.internal:8081
     ports:
-      - "8080:8080"
+      - "443:443"
     depends_on:
       books_db:
         condition: service_healthy
       minio:
         condition: service_healthy
+      logstash:
+        condition: service_started
     networks:
       - app-network
 
@@ -80,11 +87,27 @@ services:
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - ELASTIC_PASSWORD=password
+#      - xpack.security.enabled=true
+#      - ELASTIC_PASSWORD=password
     ports:
       - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    networks:
+      - app-network
+
+  logstash:
+    image: elastic/logstash:8.17.5
+    container_name: logstash
+    volumes:
+      - ./backend/logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
     networks:
       - app-network
 

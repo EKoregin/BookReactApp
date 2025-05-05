@@ -11,7 +11,10 @@ cloud:
   dbase-host: localhost:5432
   rabbitmq-host: localhost
   elastic-host: localhost
-  keycloak-host: localhost
+  keycloak-url: http://localhost:8081
+  logstash-host: localhost
+  minio-host: localhost
+  user-host: localhost
 
 spring:
   cloud:
@@ -20,13 +23,13 @@ spring:
         access-key: admin
         secret-key: password
       s3:
-        endpoint: http://localhost:9000
+        endpoint: http://${cloud.minio-host}:9000
         bucket: bookreactapp
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://${cloud.keycloak-host}:8081/realms/myrealm
+          issuer-uri: ${cloud.keycloak-url}/realms/myrealm
       client:
         registration:
           keycloak:
@@ -37,10 +40,10 @@ spring:
             scope: openid,profile,email
         provider:
           keycloak:
-            authorization-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/auth
-            token-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/token
-            user-info-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/userinfo
-            jwk-set-uri: http://${cloud.keycloak-host}:8081/realms/myrealm/protocol/openid-connect/certs
+            authorization-uri: ${cloud.keycloak-url}/realms/myrealm/protocol/openid-connect/auth
+            token-uri: ${cloud.keycloak-url}/realms/myrealm/protocol/openid-connect/token
+            user-info-uri: ${cloud.keycloak-url}/realms/myrealm/protocol/openid-connect/userinfo
+            jwk-set-uri: ${cloud.keycloak-url}/realms/myrealm/protocol/openid-connect/certs
             user-name-attribute: preferred_username
   elasticsearch:
     uris: http://${cloud.elastic-host}:9200
@@ -94,3 +97,10 @@ aws:
   java:
     v1:
       disableDeprecationAnnouncement: true
+
+logging:
+  level:
+    ru.korevg.bookreactapp: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security.oauth2: DEBUG
