@@ -34,7 +34,7 @@ services:
       LOGSTASH_HOST: logstash
       MINIO_HOST: minio
       USER_HOST: 192.168.65.254
-      KEYCLOAK_URL: http://host.docker.internal:8081
+      KEYCLOAK_URL: http://192.168.1.87:8081
     ports:
       - "443:443"
     depends_on:
