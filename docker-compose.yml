@@ -120,8 +120,8 @@ services:
     tmpfs:
       - /usr/share/logstash/core:size=100m
     volumes:
-      - ./backend/logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./backend/logstash/config/logstash.yml:/etc/logstash/logstash.yml
+      - ./logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/config/logstash.yml:/etc/logstash/logstash.yml
     ports:
       - "5000:5000"
       - "9600:9600"
