@@ -200,7 +200,7 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>3.5.0</version>
                 <configuration>
-                    <configLocation>checkstyle.xml</configLocation> <!-- Путь к файлу -->
+                    <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
                     <failsOnError>true</failsOnError> <!-- Пайплайн завершится ошибкой при нарушениях -->
                 </configuration>
