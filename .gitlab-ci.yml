@@ -2,11 +2,18 @@ stages:
   - build
   - lint
   - test
+  - package
+  - docker
   - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-  MAVEN_CLI_OPTS: "-B -V"
+  MAVEN_CLI_OPTS: "-B -DskipTests"
+  APP_NAME: "bookreactapp:min"
+  SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY  # Установить в CI/CD Settings
+  REMOTE_USER: mnemonic
+  REMOTE_HOST: 192.168.1.87
+  REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp
 
 build:
   stage: build
@@ -50,6 +57,33 @@ maven_test:
     - dev
   tags:
     - maven
+
+package:
+  stage: package
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - mvn package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+  only:
+    - dev
+
+docker:
+  stage: docker
+  image: docker:28.1.1
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo "Create docker image and push to dockerhub..."
+    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+    - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
+    - docker push $DOCKERHUB_USERNAME/$APP_NAME
+  only:
+    - dev
 
 # Деплой (например, на тестовый стенд)
 deploy:
