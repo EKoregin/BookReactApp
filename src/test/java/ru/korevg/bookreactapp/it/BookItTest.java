@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 public class BookItTest extends ITBase {
 
     private static final String TEST_BOOK_ISBN = "9781503280786";
-    private static final String NEW_BOOK_ISBN = "978-5-4461-1107-7";
+    private static final String NEW_BOOK_ISBN = "\"978-5-4461-1107-7\"";
 
     @LocalServerPort
     private int port;
