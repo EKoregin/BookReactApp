@@ -1,17 +1,17 @@
 server:
   port: 443
   ssl:
+    enabled: true
     key-store-type: PKCS12
     key-store: classpath:keystore.p12
-    key-store-password: qazwsx
-    key-alias: springboot
-    enabled: true
+    key-store-password: changeit
+    key-alias: myalias
 
 cloud:
   dbase-host: localhost:5432
   rabbitmq-host: localhost
   elastic-host: localhost
-  keycloak-url: http://localhost:8081
+  keycloak-url: https://localhost:8443
   logstash-host: localhost
   minio-host: localhost
   user-host: localhost
@@ -93,14 +93,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-aws:
-  java:
-    v1:
-      disableDeprecationAnnouncement: true
-
 logging:
   level:
-    ru.korevg.bookreactapp: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.security.oauth2: DEBUG
+    ru.korevg.bookreactapp: INFO

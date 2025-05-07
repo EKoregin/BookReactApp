@@ -5,36 +5,45 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTPS_ENABLED=true
+      - KC_HTTPS_PORT=8443
+      - KC_HTTPS_KEY_STORE_FILE=/conf/keystore.p12
+      - KC_HTTPS_KEY_STORE_PASSWORD=changeit
+      - KC_HTTPS_KEY_STORE_TYPE=PKCS12
+      - KC_HTTPS_KEY_ALIAS=myalias
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://books_db:5432/keycloak
       - KC_DB_USERNAME=b2b
       - KC_DB_PASSWORD=b2b
-      - KC_HOSTNAME=host.docker.internal
-      - KC_HOSTNAME_PORT=8081
-      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME=localhost
+      - KC_HOSTNAME_PORT=8443
       - KC_HOSTNAME_STRICT=false
+      - LS_JAVA_OPTS=-Xms256m -Xmx512m
     ports:
-      - "8081:8080"
+      - "8443:8443"
+    volumes:
+      - ./certs/keystore.p12:/conf/keystore.p12
     depends_on:
       - books_db
-    command: start-dev
+    command: start-dev --https-port=8443
     networks:
       - app-network
-  app:
-    image: bookreactapp:latest
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    mem_limit: 512m
+
+  bookreactapp:
+    image: bookreactapp:min
+    container_name: bookreactapp
     environment:
-      SPRING_PROFILES_ACTIVE: cloud
-      DB_HOST: books_db
-      RABBITMQ_HOST: rabbitmq
-      ELASTIC_HOST: elasticsearch
-      SPRING_CLOUD_AWS_S3_ENDPOINT: http://minio:9000
-      LOGSTASH_HOST: logstash
-      MINIO_HOST: minio
-      USER_HOST: 192.168.65.254
-      KEYCLOAK_URL: http://192.168.1.87:8081
+      - SPRING_PROFILES_ACTIVE=cloud
+      - DB_HOST=books_db
+      - RABBITMQ_HOST=rabbitmq
+      - ELASTIC_HOST=elasticsearch
+      - SPRING_CLOUD_AWS_S3_ENDPOINT=http://minio:9000
+      - LOGSTASH_HOST=logstash
+      - MINIO_HOST=minio
+      - USER_HOST=192.168.1.21
+      - KEYCLOAK_URL=https://192.168.1.87:8443
+      - JAVA_TOOL_OPTIONS=-Djavax.net.ssl.trustStore=/app/truststore.p12 -Djavax.net.ssl.trustStorePassword=changeit -Djavax.net.ssl.trustStoreType=PKCS12
     ports:
       - "443:443"
     depends_on:
@@ -46,6 +55,9 @@ services:
         condition: service_started
     networks:
       - app-network
+    volumes:
+      - ./certs/keystore.p12:/app/keystore.p12
+      - ./certs/truststore.p12:/app/truststore.p12
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -54,21 +66,22 @@ services:
       - "5672:5672"    # Порт для AMQP
       - "15672:15672"  # Порт для веб-интерфейса
     environment:
-      RABBITMQ_DEFAULT_USER: book         # Имя пользователя по умолчанию
-      RABBITMQ_DEFAULT_PASS: password     # Пароль по умолчанию
+      - RABBITMQ_DEFAULT_USER=book         # Имя пользователя по умолчанию
+      - RABBITMQ_DEFAULT_PASS=password     # Пароль по умолчанию
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq   # Хранение данных RabbitMQ
     networks:
       - app-network
+    mem_limit: 512m
 
   books_db:
     image: postgres
     container_name: books_db
     environment:
-      POSTGRES_USER: b2b
-      POSTGRES_PASSWORD: b2b
-      POSTGRES_DB: books
-      PGDATA: /var/lib/postgresql/data
+      - POSTGRES_USER=b2b
+      - POSTGRES_PASSWORD=b2b
+      - POSTGRES_DB=books
+      - PGDATA=/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -81,35 +94,45 @@ services:
     restart: always
     networks:
       - app-network
+    mem_limit: 512m
 
   elasticsearch:
     image: elasticsearch:7.17.28
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-#      - xpack.security.enabled=true
-#      - ELASTIC_PASSWORD=password
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
     networks:
       - app-network
+    mem_limit: 1g
 
   logstash:
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
     image: elastic/logstash:8.17.5
     container_name: logstash
+    tmpfs:
+      - /usr/share/logstash/core:size=100m
     volumes:
       - ./backend/logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./backend/logstash/config/logstash.yml:/etc/logstash/logstash.yml
     ports:
       - "5000:5000"
       - "9600:9600"
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - LS_JAVA_OPTS=-Xms512m -Xmx1g
     depends_on:
       - elasticsearch
     networks:
       - app-network
+    mem_limit: 1g
 
   kibana:
     image: kibana:7.17.28
@@ -118,8 +141,10 @@ services:
       - "5601:5601"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
     networks:
       - app-network
+    mem_limit: 512m
 
   minio:
     image: quay.io/minio/minio:latest
@@ -139,6 +164,7 @@ services:
       timeout: 20s
       retries: 3
     restart: unless-stopped
+    mem_limit: 512m
 
 networks:
   app-network:

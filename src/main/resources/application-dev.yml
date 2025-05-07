@@ -1,0 +1,20 @@
+vmbox:
+  host: 192.168.1.87
+
+cloud:
+  dbase-host: ${vmbox.host}:5432
+  rabbitmq-host: ${vmbox.host}
+  elastic-host: ${vmbox.host}
+  keycloak-url: https://${vmbox.host}:8443
+  logstash-host: ${vmbox.host}
+  minio-host: ${vmbox.host}
+  user-host: 192.168.1.21
+
+logging:
+  level:
+    ru.korevg.bookreactapp: DEBUG
+    org.springframework.security: error
+    org.springframework.web: error
+    org.springframework.security.oauth2: error
+    reactor.netty: error
+    org.springframework.web.reactive.function.client.ExchangeFunctions: error
