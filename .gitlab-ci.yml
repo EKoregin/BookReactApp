@@ -79,7 +79,7 @@ docker:
     DOCKER_TLS_CERTDIR: ""
   script:
     - echo "Create docker image and push to dockerhub..."
-    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
     - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
     - docker push $DOCKERHUB_USERNAME/$APP_NAME
   only:
@@ -96,5 +96,5 @@ deploy:
     - chmod 600 ~/.ssh/id_ed25519
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
-#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose -f /path/to/docker-compose.yml up -d --build"
+#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose pull $DOCKERHUB_USERNAME/$APP_NAME && docker-compose up -d --no-deps bookreactapp"
     - ssh $REMOTE_USER@$DEPLOY_HOST "uptime"
