@@ -4,7 +4,7 @@ stages:
 #  - test
 #  - package
   - docker
-#  - deploy
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -15,59 +15,59 @@ variables:
   DEPLOY_HOST: 192.168.1.87
   REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp
 
-build:
-  stage: build
-  image: maven:3.9.4-eclipse-temurin-17
-  script:
-    - mvn $MAVEN_CLI_OPTS clean compile
-  artifacts:
-    paths:
-      - target/
-    expire_in: 1 week
-  only:
-    - dev
-  tags:
-    - docker
-
-# Проверка синтаксиса Java-кода с Checkstyle
-java_lint:
-  stage: lint
-  image: maven:3.9.4-eclipse-temurin-17
-  script:
-    - echo "Проверка синтаксиса Java с Checkstyle..."
-    - mvn $MAVEN_CLI_OPTS checkstyle:check
-  artifacts:
-    when: always
-    paths:
-      - target/checkstyle-result.xml
-    expire_in: 1 week
-  tags:
-    - docker
-  only:
-    - dev
-
-# Запускаем только при пуше в ветку main
-maven_test:
-  stage: test
-  image: maven:3.9.4-eclipse-temurin-17
-  script:
-    - echo "Running tests..."
-    - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
-  only:
-    - dev
-  tags:
-    - maven
-
-package:
-  stage: package
-  image: maven:3.9.4-eclipse-temurin-17
-  script:
-    - mvn package -DskipTests
-  artifacts:
-    paths:
-      - target/*.jar
-  only:
-    - dev
+#build:
+#  stage: build
+#  image: maven:3.9.4-eclipse-temurin-17
+#  script:
+#    - mvn $MAVEN_CLI_OPTS clean compile
+#  artifacts:
+#    paths:
+#      - target/
+#    expire_in: 1 week
+#  only:
+#    - dev
+#  tags:
+#    - docker
+#
+## Проверка синтаксиса Java-кода с Checkstyle
+#java_lint:
+#  stage: lint
+#  image: maven:3.9.4-eclipse-temurin-17
+#  script:
+#    - echo "Проверка синтаксиса Java с Checkstyle..."
+#    - mvn $MAVEN_CLI_OPTS checkstyle:check
+#  artifacts:
+#    when: always
+#    paths:
+#      - target/checkstyle-result.xml
+#    expire_in: 1 week
+#  tags:
+#    - docker
+#  only:
+#    - dev
+#
+## Запускаем только при пуше в ветку main
+#maven_test:
+#  stage: test
+#  image: maven:3.9.4-eclipse-temurin-17
+#  script:
+#    - echo "Running tests..."
+#    - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
+#  only:
+#    - dev
+#  tags:
+#    - maven
+#
+#package:
+#  stage: package
+#  image: maven:3.9.4-eclipse-temurin-17
+#  script:
+#    - mvn package -DskipTests
+#  artifacts:
+#    paths:
+#      - target/*.jar
+#  only:
+#    - dev
 
 docker:
   stage: docker
