@@ -1,10 +1,10 @@
 stages:
-  - build
-  - lint
-  - test
-  - package
+#  - build
+#  - lint
+#  - test
+#  - package
   - docker
-  - deploy
+#  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -79,6 +79,8 @@ docker:
     DOCKER_TLS_CERTDIR: ""
   script:
     - echo "Create docker image and push to dockerhub..."
+    - echo "USERNAME: $DOCKERHUB_USERNAME"
+    - echo "PASSWORD SET: ${#DOCKERHUB_PASSWORD}"
     - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
     - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
     - docker push $DOCKERHUB_USERNAME/$APP_NAME
