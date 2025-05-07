@@ -12,7 +12,7 @@ variables:
   APP_NAME: "bookreactapp:min"
   SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY  # Установить в CI/CD Settings
   REMOTE_USER: mnemonic
-  REMOTE_HOST: 192.168.1.87
+  DEPLOY_HOST: 192.168.1.87
   REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp
 
 build:
@@ -79,7 +79,7 @@ docker:
     DOCKER_TLS_CERTDIR: ""
   script:
     - echo "Create docker image and push to dockerhub..."
-    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+    - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
     - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
     - docker push $DOCKERHUB_USERNAME/$APP_NAME
   only:
@@ -89,9 +89,12 @@ docker:
 deploy:
   stage: deploy
   image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
-    - echo "Deploy step (placeholder)"
-  only:
-    - dev
-  tags:
-    - docker
+#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose -f /path/to/docker-compose.yml up -d --build"
+    - ssh $REMOTE_USER@$DEPLOY_HOST "uptime"
