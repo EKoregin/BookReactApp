@@ -1,3 +1,7 @@
+# first_job:
+#   stage: build
+#   script:
+#     - echo "first-1-job"
 stages:
   - test
 
