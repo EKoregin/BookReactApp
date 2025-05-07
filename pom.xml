@@ -202,7 +202,7 @@
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
-                    <failsOnError>true</failsOnError> <!-- Пайплайн завершится ошибкой при нарушениях -->
+                    <failsOnError>true</failsOnError> <!-- Пайплайн завершится ошибкой при нарушения -->
                 </configuration>
                 <executions>
                     <execution>
