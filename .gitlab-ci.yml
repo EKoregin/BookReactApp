@@ -1,6 +1,26 @@
 stages:
+  - build
   - lint
   - test
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: "-B -V"
+
+build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - mvn $MAVEN_CLI_OPTS clean compile
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 week
+  only:
+    - dev
+  tags:
+    - docker
 
 # Проверка синтаксиса Java-кода с Checkstyle
 java_lint:
@@ -8,7 +28,7 @@ java_lint:
   image: maven:3.9.4-eclipse-temurin-17
   script:
     - echo "Проверка синтаксиса Java с Checkstyle..."
-    - mvn clean checkstyle:check
+    - mvn $MAVEN_CLI_OPTS checkstyle:check
   artifacts:
     when: always
     paths:
@@ -30,3 +50,14 @@ maven_test:
     - dev
   tags:
     - maven
+
+# Деплой (например, на тестовый стенд)
+deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploy step (placeholder)"
+  only:
+    - dev
+  tags:
+    - docker
