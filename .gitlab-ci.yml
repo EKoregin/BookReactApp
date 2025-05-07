@@ -1,16 +1,16 @@
-first_job:
-  stage: build
-  script:
-    - echo "first-1-job"
-# stages:
-#   - test
-
-# # Запускаем только при пуше в ветку main
-# maven_test:
-#   stage: test
-#   image: maven:3.9.4-eclipse-temurin-17
+# first_job:
+#   stage: build
 #   script:
-#     - echo "Running tests..."
-#     - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
-#   only:
-#     - dev
+#     - echo "first-1-job"
+stages:
+  - test
+
+# Запускаем только при пуше в ветку main
+maven_test:
+  stage: test
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - echo "Running tests..."
+    - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
+  only:
+    - dev
