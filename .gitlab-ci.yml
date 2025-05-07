@@ -10,3 +10,5 @@ maven_test:
     - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
   only:
     - dev
+  tags:
+    - maven
