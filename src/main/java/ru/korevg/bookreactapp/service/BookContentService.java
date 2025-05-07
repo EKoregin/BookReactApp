@@ -27,6 +27,8 @@ public class BookContentService {
      * Метод принимает DataBuffer преобразовывает в массив byte[].
      * Создает сущность BookContent и сохраняет в БД
      *
+     * @param content downloading file
+     * @param isbn    updating book
      * @return Mono<BookContentDto>
      */
     @Transactional
@@ -47,7 +49,8 @@ public class BookContentService {
                         s3Service.deleteFile(book.getContent());
                     }
                     String fileKey = s3Service.uploadFile(content.getOriginalFilename(), content);
-                    log.info("BookContent was uploaded with size: {} and media type: {}", size, content.getContentType());
+                    log.info("BookContent was uploaded with size: {} and media type: {}",
+                            size, content.getContentType());
 
                     return Mono.just(fileKey)
                             .publishOn(Schedulers.boundedElastic())

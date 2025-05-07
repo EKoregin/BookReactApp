@@ -23,13 +23,20 @@ public class S3Service {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
+    /**
+     * Uploading file to Minio
+     * @param fileName
+     * @param file
+     * @return key
+     */
     public String uploadFile(String fileName, MultipartFile file) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(file.getContentType());
         objectMetadata.setContentLength(file.getSize());
         String key = String.format("%d-%s", System.currentTimeMillis(), fileName);
         try {
-            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, new ByteArrayInputStream(file.getBytes()), objectMetadata);
+            PutObjectRequest putObjectRequest =
+                    new PutObjectRequest(bucketName, key, new ByteArrayInputStream(file.getBytes()), objectMetadata);
             s3Client.putObject(putObjectRequest);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
@@ -37,6 +44,11 @@ public class S3Service {
         return key;
     }
 
+    /**
+     * Downloading file from Minio
+     * @param key
+     * @return byte[]
+     */
     public byte[] downloadFile(String key) {
         log.info("Downloading file {} from Minio", key);
         GetObjectRequest request = new GetObjectRequest(bucketName, key);
@@ -48,7 +60,11 @@ public class S3Service {
 
     }
 
-    public void deleteFile(String key) {
+    /**
+     * Deleting file in Minio
+     * @param key
+     */
+    public void deleteFile(final String key) {
         s3Client.deleteObject(bucketName, key);
     }
 }

@@ -54,7 +54,8 @@ public class BookIndexService {
 
                     return Mono.just(s3Service.downloadFile(bookDto.getContent()))
                             .switchIfEmpty(Mono.defer(() -> {
-                                String errMsg = String.format("Content ID: %s for book with isbn %s not found. Index without content", contentId, isbn);
+                                String errMsg = String.format("Content ID: %s for book with isbn %s not found. " +
+                                        "Index without content", contentId, isbn);
                                 log.info(errMsg);
                                 elasticsearchTemplate.save(dto);
                                 return Mono.error(new ContentNotFoundException(errMsg));
