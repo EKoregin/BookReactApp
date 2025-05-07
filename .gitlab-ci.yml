@@ -3,7 +3,25 @@
 #   script:
 #     - echo "first-1-job"
 stages:
+  - lint
   - test
+
+# Проверка синтаксиса Java-кода с Checkstyle
+java_lint:
+  stage: lint
+  image: maven:3.8-openjdk-11
+  script:
+    - echo "Проверка синтаксиса Java с Checkstyle..."
+    - mvn clean checkstyle:check
+  artifacts:
+    when: always
+    paths:
+      - target/checkstyle-result.xml
+    expire_in: 1 week
+  tags:
+    - docker
+  only:
+    - dev
 
 # Запускаем только при пуше в ветку main
 maven_test:
