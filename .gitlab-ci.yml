@@ -14,8 +14,9 @@ stages:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "-B -DskipTests"
-  APP_NAME: "bookreactapp:min"
-  SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY  # Установить в CI/CD Settings
+  APP_NAME: "bookreactapp"
+  APP_DOCKER_NAME: $APP_NAME:min
+#  SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY  # Установить в CI/CD Settings
   REMOTE_USER: mnemonic
   DEPLOY_HOST: 192.168.1.87
   REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp
@@ -87,8 +88,8 @@ variables:
 #    - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
 #  script:
 #    - echo "Create docker image and push to dockerhub..."
-#    - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
-#    - docker push $DOCKERHUB_USERNAME/$APP_NAME
+#    - docker build -t $DOCKERHUB_USERNAME/$APP_DOCKER_NAME .
+#    - docker push $DOCKERHUB_USERNAME/$APP_DOCKER_NAME
 #  only:
 #    - dev
 
@@ -100,9 +101,8 @@ deploy:
     - apk add --no-cache openssh
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
-    - cat ~/.ssh/id_ed25519  # Для отладки
     - chmod 600 ~/.ssh/id_ed25519
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
-#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose pull $DOCKERHUB_USERNAME/$APP_NAME && docker-compose up -d --no-deps bookreactapp"
     - ssh $REMOTE_USER@$DEPLOY_HOST "uptime"
+    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose pull $DOCKERHUB_USERNAME/$APP_DOCKER_NAME && docker-compose up -d --no-deps $APP_NAME"
