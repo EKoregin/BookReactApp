@@ -15,7 +15,7 @@ variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "-B -DskipTests"
   APP_NAME: "bookreactapp"
-  APP_DOCKER_NAME: $DOCKERHUB_USERNAME/$APP_NAME:$CI_COMMIT_SHORT_SHA
+  APP_DOCKER_NAME: $DOCKERHUB_USERNAME/$APP_NAME:$CI_COMMIT_SHORT_SHA #docker hub repository
   REMOTE_USER: mnemonic
   DEPLOY_HOST: 192.168.1.87
   REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp/docker-compose.yml
@@ -92,7 +92,7 @@ docker:
   only:
     - dev
 
-# Деплой (например, на тестовый стенд)
+# Деплой
 deploy:
   stage: deploy
   image: alpine:latest
