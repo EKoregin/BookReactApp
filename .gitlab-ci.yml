@@ -16,6 +16,7 @@ variables:
   PROJECT_PATH: $CI_PROJECT_PATH  # например: devops/bookreactapp
   IMAGE_TAG: $CI_COMMIT_SHORT_SHA
   IMAGE_NAME: $REGISTRY/$PROJECT_PATH:$IMAGE_TAG
+  DOCKER_DAEMON_ARGS: "--insecure-registry=192.168.1.86:5050"
 
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   MAVEN_CLI_OPTS: "-B -DskipTests"
@@ -84,7 +85,6 @@ docker:
   image: docker:28.1.1
   services:
     - docker:28.1.1-dind
-    - command: ["--insecure-registry=192.168.1.86:5050"]
   variables:
     DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
   before_script:
