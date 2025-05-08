@@ -87,6 +87,7 @@ docker:
     - docker:28.1.1-dind
   variables:
     DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
+    DOCKER_TLS_CERTDIR: ""
   before_script:
     - echo "$CI_JOB_TOKEN" | docker login --username gitlab-ci-token --password-stdin $REGISTRY
   script:
