@@ -8,7 +8,7 @@ stages:
 #  - lint
 #  - test
   - package
-#  - docker
+  - docker
 #  - deploy
 
 variables:
@@ -76,22 +76,22 @@ package:
   only:
     - dev
 
-#docker:
-#  stage: docker
-#  image: docker:28.1.1
-#  services:
-#    - docker:28.1.1-dind
-#  variables:
-#    DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
-#  before_script:
-#    - docker info
-#    - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-#  script:
-#    - echo "Create docker image and push to dockerhub..."
-#    - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
-#    - docker push $DOCKERHUB_USERNAME/$APP_NAME
-#  only:
-#    - dev
+docker:
+  stage: docker
+  image: docker:28.1.1
+  services:
+    - docker:28.1.1-dind
+  variables:
+    DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
+  before_script:
+    - docker info
+    - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+  script:
+    - echo "Create docker image and push to dockerhub..."
+    - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
+    - docker push $DOCKERHUB_USERNAME/$APP_NAME
+  only:
+    - dev
 
 # Деплой (например, на тестовый стенд)
 #deploy:
