@@ -18,7 +18,7 @@ variables:
   APP_DOCKER_NAME: $DOCKERHUB_USERNAME/$APP_NAME:min
   REMOTE_USER: mnemonic
   DEPLOY_HOST: 192.168.1.87
-  REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp
+  REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp/docker-compose.yml
 
 #build:
 #  stage: build
