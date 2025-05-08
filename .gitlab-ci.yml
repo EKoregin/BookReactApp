@@ -84,10 +84,11 @@ docker:
   image: docker:28.1.1
   services:
     - docker:28.1.1-dind
+  command: ["--insecure-registry=192.168.1.86:5050"]
   variables:
     DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
   before_script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $REGISTRY
+    - echo "$CI_JOB_TOKEN" | docker login --username gitlab-ci-token --password-stdin $REGISTRY
   script:
     - echo "Create docker image and push to Gitlab registry..."
     - docker build -t $IMAGE_NAME .
