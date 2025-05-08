@@ -2,17 +2,14 @@ package ru.korevg.bookreactapp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpConnectException;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import ru.korevg.bookreactapp.exceptions.BookNotFoundException;
 import ru.korevg.bookreactapp.producer.BookIndexProducer;
 import ru.korevg.bookreactapp.repository.BookRepository;
-
-import java.io.IOException;
 
 @Slf4j
 @Service
@@ -27,12 +24,11 @@ public class BookContentService {
      * Метод принимает DataBuffer преобразовывает в массив byte[].
      * Создает сущность BookContent и сохраняет в БД
      *
-     * @param content downloading file
-     * @param isbn    updating book
+     * @param filePartFlux downloading file
+     * @param isbn         updating book
      * @return Mono<BookContentDto>
      */
-    @Transactional
-    public Mono<String> create(MultipartFile content, String isbn) {
+    public Mono<String> create(Flux<FilePart> filePartFlux, String isbn) {
         log.info("Upload BookContent...");
         return bookRepository.findByIsbn(isbn)
                 .switchIfEmpty(Mono.defer(() -> {
@@ -40,34 +36,41 @@ public class BookContentService {
                     log.info(errMsg);
                     return Mono.error(new BookNotFoundException(errMsg));
                 }))
-                .flatMap(book -> {
-                    int size = (int) content.getSize();
+                .flatMap(book -> filePartFlux.next().flatMap(filePart -> {
+                    String contentType = filePart.headers().getContentType() != null
+                            ? filePart.headers().getContentType().toString()
+                            : "application/octet-stream";
 
-                    if (book.getContent() != null) {
-                        log.info("Update BookContent for book with isbn {}", isbn);
-                        log.info("Delete old BookContent with keyFile {}", book.getContent());
-                        s3Service.deleteFile(book.getContent());
-                    }
-                    String fileKey = s3Service.uploadFile(content.getOriginalFilename(), content);
-                    log.info("BookContent was uploaded with size: {} and media type: {}",
-                            size, content.getContentType());
-
-                    return Mono.just(fileKey)
-                            .publishOn(Schedulers.boundedElastic())
-                            .doOnNext(savedBookContent -> {
-                                log.info("Save book isbn: {} with fileKey: {}", isbn, fileKey);
-                                book.setContent(fileKey);
-                                bookRepository.save(book).subscribe();
-                                //Отправка сообщения на индексацию книги
-                                try {
-                                    String msg = String.format("Book with isbn: {%s} need reindex in ElasticSearch", isbn);
-                                    log.info(msg);
-                                    bookIndexProducer.sendMessage(msg);
-                                } catch (AmqpConnectException e) {
-                                    log.error("Ошибка подключения к RabbitMQ: {}", e.getMessage());
-                                    throw new RuntimeException(e);
+                    return DataBufferUtils.join(filePart.content())
+                            .map(dataBuffer -> {
+                                byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                                dataBuffer.read(bytes);
+                                DataBufferUtils.release(dataBuffer);
+                                return bytes;
+                            })
+                            .flatMap(bytes -> {
+                                if (book.getContent() != null) {
+                                    log.info("Delete old BookContent with keyFile {}", book.getContent());
+                                    s3Service.deleteFile(book.getContent());
                                 }
+
+                                return s3Service.uploadFile(filePart.filename(), bytes, contentType)
+                                        .flatMap(fileKey -> {
+                                            log.info("BookContent was uploaded with size: {} and media type: {}",
+                                                    bytes.length, contentType);
+                                            book.setContent(fileKey);
+                                            return bookRepository.save(book)
+                                                    .flatMap(savedBook -> {
+                                                        String msg = String.format("Book with isbn: {%s} need reindex in ElasticSearch", isbn);
+                                                        log.info(msg);
+                                                        return bookIndexProducer.sendMessage(msg).thenReturn(fileKey);
+                                                    });
+                                        });
                             });
-                }).onErrorMap(IOException.class, e -> new RuntimeException("Проблема с обработкой данных", e));
+                }))
+                .onErrorResume(e -> {
+                    log.error("Error processing file upload for ISBN {}: {}", isbn, e.getMessage());
+                    return Mono.error(new RuntimeException("Failed to process file upload", e));
+                });
     }
 }

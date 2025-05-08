@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,28 +26,29 @@ public class S3Service {
 
     /**
      * Uploading file to Minio
-     * @param fileName
-     * @param file
+     *
+     * @param fileName file name
+     * @param bytes file bytes
+     * @param contentType content type
      * @return key
      */
-    public String uploadFile(String fileName, MultipartFile file) {
-        ObjectMetadata objectMetadata = new ObjectMetadata();
-        objectMetadata.setContentType(file.getContentType());
-        objectMetadata.setContentLength(file.getSize());
-        String key = String.format("%d-%s", System.currentTimeMillis(), fileName);
-        try {
+    public Mono<String> uploadFile(String fileName, byte[] bytes, String contentType) {
+        return Mono.fromCallable(() -> {
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(contentType);
+            objectMetadata.setContentLength(bytes.length);
+            String key = String.format("%d-%s", System.currentTimeMillis(), fileName);
             PutObjectRequest putObjectRequest =
-                    new PutObjectRequest(bucketName, key, new ByteArrayInputStream(file.getBytes()), objectMetadata);
+                    new PutObjectRequest(bucketName, key, new ByteArrayInputStream(bytes), objectMetadata);
             s3Client.putObject(putObjectRequest);
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-        return key;
+            return key;
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
      * Downloading file from Minio
-     * @param key
+     *
+     * @param key fileName in Minio
      * @return byte[]
      */
     public byte[] downloadFile(String key) {
@@ -57,12 +59,12 @@ public class S3Service {
         } catch (IOException e) {
             throw new RuntimeException("File not found in MinIO: " + key, e);
         }
-
     }
 
     /**
      * Deleting file in Minio
-     * @param key
+     *
+     * @param key fileName in Minio
      */
     public void deleteFile(final String key) {
         s3Client.deleteObject(bucketName, key);
