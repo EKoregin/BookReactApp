@@ -24,7 +24,7 @@ build:
   stage: build
   image: maven:3.9.4-eclipse-temurin-17
   script:
-    - mvn $MAVEN_CLI_OPTS dependency:go-offline
+#    - mvn $MAVEN_CLI_OPTS dependency:go-offline
     - mvn $MAVEN_CLI_OPTS clean compile
   artifacts:
     paths:
@@ -69,7 +69,7 @@ package:
   image: maven:3.9.4-eclipse-temurin-17
   script:
     - ls -la ~/.m2/repository
-    - mvn package -DskipTests -o
+    - mvn package -DskipTests
   artifacts:
     paths:
       - target/*.jar
