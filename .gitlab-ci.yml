@@ -4,7 +4,7 @@ cache:
     - .m2/repository/  # Путь к локальному репозиторию Maven
 
 stages:
-#  - build
+  - build
 #  - lint
 #  - test
   - package
@@ -25,20 +25,20 @@ variables:
   DEPLOY_HOST: 192.168.1.87
   REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp/docker-compose.yml
 
-#build:
-#  stage: build
-#  image: maven:3.9.4-eclipse-temurin-17
-#  script:
-##    - mvn $MAVEN_CLI_OPTS dependency:go-offline
-#    - mvn $MAVEN_CLI_OPTS clean compile
-#  artifacts:
-#    paths:
-#      - target/
-#    expire_in: 1 week
-#  only:
-#    - dev
-#  tags:
-#    - docker
+build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+#    - mvn $MAVEN_CLI_OPTS dependency:go-offline
+    - mvn $MAVEN_CLI_OPTS clean compile
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 week
+  only:
+    - dev
+  tags:
+    - docker
 
 ## Проверка синтаксиса Java-кода с Checkstyle
 #java_lint:
@@ -109,4 +109,4 @@ deploy:
     - chmod 600 ~/.ssh/id_ed25519
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
-    - ssh $REMOTE_USER@$DEPLOY_HOST "export $IMAGE_NAME && docker pull $IMAGE_NAME && docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
+    - ssh $REMOTE_USER@$DEPLOY_HOST "export IMAGE_NAME=$IMAGE_NAME && docker pull $IMAGE_NAME && docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
