@@ -105,4 +105,4 @@ deploy:
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
     - ssh $REMOTE_USER@$DEPLOY_HOST "uptime"
-    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose pull $DOCKERHUB_USERNAME/$APP_DOCKER_NAME && docker compose up -d --no-deps $APP_NAME"
+    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose pull $DOCKERHUB_USERNAME/$APP_DOCKER_NAME && docker compose up -d --no-deps $APP_NAME"
