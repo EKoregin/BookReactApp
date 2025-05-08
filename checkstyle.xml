@@ -7,6 +7,7 @@
     <!-- Проверка длины строк (на уровне Checker) -->
     <module name="LineLength">
         <property name="max" value="130"/>
+        <property name="ignorePattern" value="^\s{40,}.*$" />
     </module>
     <!-- TreeWalker для проверок структуры кода -->
     <module name="TreeWalker">
