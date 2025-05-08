@@ -84,7 +84,8 @@ docker:
   stage: docker
   image: docker:28.1.1
   services:
-    - docker:28.1.1-dind
+    - name: docker:28.1.1-dind
+      command: ["--insecure-registry=192.168.1.86:5050"]
   variables:
     DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
     DOCKER_TLS_CERTDIR: ""
