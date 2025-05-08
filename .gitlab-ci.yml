@@ -4,12 +4,12 @@ cache:
     - .m2/repository/  # Путь к локальному репозиторию Maven
 
 stages:
-  - build
+#  - build
 #  - lint
 #  - test
-  - package
-  - docker
-#  - deploy
+#  - package
+#  - docker
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -20,20 +20,20 @@ variables:
   DEPLOY_HOST: 192.168.1.87
   REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp
 
-build:
-  stage: build
-  image: maven:3.9.4-eclipse-temurin-17
-  script:
-#    - mvn $MAVEN_CLI_OPTS dependency:go-offline
-    - mvn $MAVEN_CLI_OPTS clean compile
-  artifacts:
-    paths:
-      - target/
-    expire_in: 1 week
-  only:
-    - dev
-  tags:
-    - docker
+#build:
+#  stage: build
+#  image: maven:3.9.4-eclipse-temurin-17
+#  script:
+##    - mvn $MAVEN_CLI_OPTS dependency:go-offline
+#    - mvn $MAVEN_CLI_OPTS clean compile
+#  artifacts:
+#    paths:
+#      - target/
+#    expire_in: 1 week
+#  only:
+#    - dev
+#  tags:
+#    - docker
 
 ## Проверка синтаксиса Java-кода с Checkstyle
 #java_lint:
@@ -64,45 +64,44 @@ build:
 #  tags:
 #    - maven
 #
-package:
-  stage: package
-  image: maven:3.9.4-eclipse-temurin-17
-  script:
-    - ls -la ~/.m2/repository
-    - mvn package -DskipTests
-  artifacts:
-    paths:
-      - target/*.jar
-  only:
-    - dev
-
-docker:
-  stage: docker
-  image: docker:28.1.1
-  services:
-    - docker:28.1.1-dind
-  variables:
-    DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
-  before_script:
-    - docker info
-    - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
-  script:
-    - echo "Create docker image and push to dockerhub..."
-    - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
-    - docker push $DOCKERHUB_USERNAME/$APP_NAME
-  only:
-    - dev
+#package:
+#  stage: package
+#  image: maven:3.9.4-eclipse-temurin-17
+#  script:
+#    - mvn package -DskipTests
+#  artifacts:
+#    paths:
+#      - target/*.jar
+#  only:
+#    - dev
+#
+#docker:
+#  stage: docker
+#  image: docker:28.1.1
+#  services:
+#    - docker:28.1.1-dind
+#  variables:
+#    DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
+#  before_script:
+#    - docker info
+#    - echo "$DOCKERHUB_PASSWORD" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+#  script:
+#    - echo "Create docker image and push to dockerhub..."
+#    - docker build -t $DOCKERHUB_USERNAME/$APP_NAME .
+#    - docker push $DOCKERHUB_USERNAME/$APP_NAME
+#  only:
+#    - dev
 
 # Деплой (например, на тестовый стенд)
-#deploy:
-#  stage: deploy
-#  image: alpine:latest
-#  before_script:
-#    - apk add --no-cache openssh
-#    - mkdir -p ~/.ssh
-#    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-#    - chmod 600 ~/.ssh/id_ed25519
-#    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
-#  script:
-##    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose pull $DOCKERHUB_USERNAME/$APP_NAME && docker-compose up -d --no-deps bookreactapp"
-#    - ssh $REMOTE_USER@$DEPLOY_HOST "uptime"
+deploy:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker-compose pull $DOCKERHUB_USERNAME/$APP_NAME && docker-compose up -d --no-deps bookreactapp"
+    - ssh $REMOTE_USER@$DEPLOY_HOST "uptime"
