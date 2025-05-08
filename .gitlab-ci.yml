@@ -5,8 +5,8 @@ cache:
 
 stages:
   - build
-#  - lint
-#  - test
+  - lint
+  - test
   - package
   - docker
   - deploy
@@ -35,35 +35,35 @@ build:
   tags:
     - docker
 
-## Проверка синтаксиса Java-кода с Checkstyle
-#java_lint:
-#  stage: lint
-#  image: maven:3.9.4-eclipse-temurin-17
-#  script:
-#    - echo "Проверка синтаксиса Java с Checkstyle..."
-#    - mvn $MAVEN_CLI_OPTS checkstyle:check
-#  artifacts:
-#    when: always
-#    paths:
-#      - target/checkstyle-result.xml
-#    expire_in: 1 week
-#  tags:
-#    - docker
-#  only:
-#    - dev
-#
-## Запускаем только при пуше в ветку main
-#maven_test:
-#  stage: test
-#  image: maven:3.9.4-eclipse-temurin-17
-#  script:
-#    - echo "Running tests..."
-#    - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
-#  only:
-#    - dev
-#  tags:
-#    - maven
-#
+# Проверка синтаксиса Java-кода с Checkstyle
+java_lint:
+  stage: lint
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - echo "Проверка синтаксиса Java с Checkstyle..."
+    - mvn $MAVEN_CLI_OPTS checkstyle:check
+  artifacts:
+    when: always
+    paths:
+      - target/checkstyle-result.xml
+    expire_in: 1 week
+  tags:
+    - docker
+  only:
+    - dev
+
+# Запускаем только при пуше в ветку main
+maven_test:
+  stage: test
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - echo "Running tests..."
+    - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
+  only:
+    - dev
+  tags:
+    - maven
+
 package:
   stage: package
   image: maven:3.9.4-eclipse-temurin-17
@@ -104,6 +104,3 @@ deploy:
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
     - ssh $REMOTE_USER@$DEPLOY_HOST "export APP_TAG=$CI_COMMIT_SHORT_SHA && docker compose -f $REMOTE_PROJECT_PATH pull $APP_NAME && docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
-#    - ssh $REMOTE_USER@$DEPLOY_HOST "export APP_TAG=$CI_COMMIT_SHORT_SHA"
-#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose -f $REMOTE_PROJECT_PATH pull $APP_NAME"
-#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
