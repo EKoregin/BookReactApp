@@ -24,6 +24,7 @@ build:
   stage: build
   image: maven:3.9.4-eclipse-temurin-17
   script:
+    - mvn $MAVEN_CLI_OPTS dependency:go-offline
     - mvn $MAVEN_CLI_OPTS clean compile
   artifacts:
     paths:
