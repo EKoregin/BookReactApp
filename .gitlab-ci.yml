@@ -103,6 +103,7 @@ deploy:
     - chmod 600 ~/.ssh/id_ed25519
     - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
   script:
-    - ssh $REMOTE_USER@$DEPLOY_HOST "export APP_TAG=$CI_COMMIT_SHORT_SHA"
-    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose -f $REMOTE_PROJECT_PATH pull $APP_NAME"
-    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
+    - ssh $REMOTE_USER@$DEPLOY_HOST "export APP_TAG=$CI_COMMIT_SHORT_SHA && docker compose -f $REMOTE_PROJECT_PATH pull $APP_NAME && docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
+#    - ssh $REMOTE_USER@$DEPLOY_HOST "export APP_TAG=$CI_COMMIT_SHORT_SHA"
+#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose -f $REMOTE_PROJECT_PATH pull $APP_NAME"
+#    - ssh $REMOTE_USER@$DEPLOY_HOST "docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"
