@@ -1,0 +1,112 @@
+cache:
+  key: ${CI_COMMIT_REF_SLUG}  # Уникальный ключ для ветки
+  paths:
+    - .m2/repository/  # Путь к локальному репозиторию Maven
+
+stages:
+  - build
+  - lint
+  - test
+  - package
+  - docker
+  - deploy
+
+variables:
+  REGISTRY: 192.168.1.86:5050
+  PROJECT_PATH: $CI_PROJECT_PATH  # например: devops/bookreactapp
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  IMAGE_NAME: $REGISTRY/$PROJECT_PATH:$IMAGE_TAG
+  DOCKER_DAEMON_ARGS: "--insecure-registry=${REGISTRY}"
+
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: "-B -DskipTests"
+  APP_NAME: "bookreactapp"
+  REMOTE_USER: mnemonic
+  DEPLOY_HOST: 192.168.1.87
+  REMOTE_PROJECT_PATH: /home/mnemonic/projects/bookreactapp/docker-compose.yml
+
+build:
+  stage: build
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+#    - mvn $MAVEN_CLI_OPTS dependency:go-offline
+    - mvn $MAVEN_CLI_OPTS clean compile
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 week
+  only:
+    - dev
+  tags:
+    - docker
+
+# Проверка синтаксиса Java-кода с Checkstyle
+java_lint:
+  stage: lint
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - echo "Проверка синтаксиса Java с Checkstyle..."
+    - mvn $MAVEN_CLI_OPTS checkstyle:check
+  artifacts:
+    when: always
+    paths:
+      - target/checkstyle-result.xml
+    expire_in: 1 week
+  tags:
+    - docker
+  only:
+    - dev
+
+# Запускаем только при пуше в ветку main
+maven_test:
+  stage: test
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - echo "Running tests..."
+    - mvn clean test -Dtest=!ru.korevg.bookreactapp.it.BookItTest
+  only:
+    - dev
+  tags:
+    - maven
+
+package:
+  stage: package
+  image: maven:3.9.4-eclipse-temurin-17
+  script:
+    - mvn package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+  only:
+    - dev
+
+docker:
+  stage: docker
+  image: docker:28.1.1
+  services:
+    - name: docker:28.1.1-dind
+      command: ["--insecure-registry=192.168.1.86:5050"]
+  variables:
+    DOCKER_HOST: "unix:///runner/services/docker/docker.sock"
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login --username gitlab-ci-token --password-stdin $REGISTRY
+  script:
+    - echo "Create docker image and push to Gitlab registry..."
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+  only:
+    - dev
+
+# Деплой
+deploy:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh $REMOTE_USER@$DEPLOY_HOST "export IMAGE_NAME=$IMAGE_NAME && docker pull $IMAGE_NAME && docker compose -f $REMOTE_PROJECT_PATH up -d --no-deps $APP_NAME"

@@ -21,7 +21,7 @@ public class WebFluxConfig implements WebFluxConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://localhost:3000", "https://" + userHost + ":3000", "https://host.docker.internal:3000")
+                .allowedOrigins("https://localhost:3000", "https://" + userHost + ":3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
     }
 }

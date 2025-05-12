@@ -32,10 +32,10 @@ public class RequestLoggingFilter implements WebFilter {
         log.info("Origin Header: {}", origin);
 
         // Логируем все заголовки
-        log.info("Headers:");
-        exchange.getRequest().getHeaders().forEach((name, values) ->
-                log.info("{}: {}", name, values)
-        );
+//        log.info("Headers:");
+//        exchange.getRequest().getHeaders().forEach((name, values) ->
+//                log.info("{}: {}", name, values)
+//        );
 
         // Продолжаем обработку запроса
         return chain.filter(exchange);

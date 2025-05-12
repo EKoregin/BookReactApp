@@ -27,6 +27,8 @@ public class ElasticSearchService {
     /**
      * Ищет совпадение или вхождение по полям.
      * Если указать несколько слов, то ищет их наличие в tokens
+     * @param search string
+     * @return Flux<BookSearchDto>
      */
     public Flux<BookSearchDto> searchBooks(String search) {
         Criteria criteria = new Criteria("title").is(search)
@@ -43,6 +45,8 @@ public class ElasticSearchService {
     /**
      * Возвращает описания книги из ElasticSearch.
      * Часть полей может не выводится. Например можно отфильтровать content и tokens
+     * @param searchPhrase string
+     * @return Flux<BookSearchDto>
      */
     public Flux<BookSearchDto> fullTextSearch(String searchPhrase) {
         log.info("Full text searching for phrase: \"{}\"", searchPhrase);

@@ -14,7 +14,7 @@ logging:
   level:
     ru.korevg.bookreactapp: DEBUG
     org.springframework.security: error
-    org.springframework.web: error
+    org.springframework.web: debug
     org.springframework.security.oauth2: error
     reactor.netty: error
     org.springframework.web.reactive.function.client.ExchangeFunctions: error
